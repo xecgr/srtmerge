@@ -30,7 +30,8 @@ from chardet.universaldetector import UniversalDetector
 
 SubRecord = namedtuple('SubRecord', ['start', 'finish', 'text'])
 DEFAULT_ENCODING = 'utf-8'
-
+#needed to know args format
+ACCEPT_SRT_ENCODING = True
 
 class Subtitles(Sequence, Iterable):
 
@@ -165,8 +166,15 @@ def detect_encoding(file_path):
 def srtmerge(in_srt_files, out_srt,
              offset=0, use_chardet=False, encoding=DEFAULT_ENCODING):
     subs = Subtitles()
-    for file_path in in_srt_files:
-        in_encoding = detect_encoding(file_path) if use_chardet else DEFAULT_ENCODING
+    #RETROCOMPATIBILITY: allow old style args
+    if type(in_srt_files) == type([]):
+        in_srt_files = {
+            srt : detect_encoding(srt) if use_chardet else encoding
+            for srt in in_srt_files
+        }
+    for file_path,_encoding in in_srt_files.iteritems():
+        in_encoding = _encoding or (detect_encoding(file_path) if use_chardet else encoding)
+        print file_path,in_encoding
         subs = subs + subreader(file_path, encoding=in_encoding)
 
     subwriter(out_srt, subs, offset, encoding)

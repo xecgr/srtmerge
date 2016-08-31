@@ -6,9 +6,9 @@
 **srtmerge** is a Python library used to merge two Srt files.
 
 ## Usage
-```python
-    from srtmerge import srtmerge
-    srtmerge([filepath1, filepath2, ...], out_filepath, offset=1000)
+```
+from srtmerge import srtmerge
+srtmerge({'filepath1':'enconding', 'filepath2':None, ...}, out_filepath, offset=1000)
 ```
 
-`srtmerge filepath1 filepath2 out_filepath offset=1000`
+`srtmerge filepath1:encoding1 filepath2 filepath3:encoding3 out_filepath offset=1000`

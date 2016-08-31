@@ -53,7 +53,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('inPath', type=str, nargs='+',
-                        help='srt-files that should be merged')
+                        help='srt-files that should be merged. Optionally you can specify the enconding appending it with colon, like this: srt1 srt2:ascii srt3:latin-1')
     parser.add_argument('outPath', type=str,
                         help='output file path')
     parser.add_argument('--offset', action='store_const', const=0, default=0,
@@ -70,7 +70,11 @@ def main():
         sys.exit(0)
     args = vars(parser.parse_args())
     if _check_argv(args):
-        srtmerge(args.get('inPath'),
+        in_srts = {
+            in_srt.split(":")[0] : in_srt.split(":")[1] if len(in_srt.split(":"))>1 else None
+            for in_srt in args.get('inPath','')
+        }
+        srtmerge(in_srts,
                  args.get('outPath'),
                  args.get('offset'),
                  not args.get('nochardet'),
