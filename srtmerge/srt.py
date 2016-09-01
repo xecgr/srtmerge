@@ -174,7 +174,6 @@ def srtmerge(in_srt_files, out_srt,
         }
     for file_path,_encoding in in_srt_files.iteritems():
         in_encoding = _encoding or (detect_encoding(file_path) if use_chardet else encoding)
-        print file_path,in_encoding
         subs = subs + subreader(file_path, encoding=in_encoding)
 
     subwriter(out_srt, subs, offset, encoding)

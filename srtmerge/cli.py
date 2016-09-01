@@ -20,6 +20,8 @@ __author__ = 'wistful'
 __version__ = '1.0'
 __release_date__ = "15/01/2014"
 
+FILE_ENCODING_SEPARATOR = ":"
+
 import os
 import sys
 
@@ -42,7 +44,8 @@ def _check_argv(args):
     if len(inPaths) < 2:
         print_error("too few arguments")
         return False
-    for path in inPaths:
+    for path_entry in inPaths:
+        path = path_entry.split(FILE_ENCODING_SEPARATOR)[0]
         if not os.path.exists(path):
             print_error("file {srt_file} does not exist".format(srt_file=path))
             return False
@@ -53,7 +56,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('inPath', type=str, nargs='+',
-                        help='srt-files that should be merged. Optionally you can specify the enconding appending it with colon, like this: srt1 srt2:ascii srt3:latin-1')
+                        help='srt-files that should be merged. Optionally you can specify the enconding appending it with colon, like this: srt1 srt2{separator}ascii srt3{separator}latin-1'.format(separator=FILE_ENCODING_SEPARATOR))
     parser.add_argument('outPath', type=str,
                         help='output file path')
     parser.add_argument('--offset', action='store_const', const=0, default=0,
@@ -71,7 +74,7 @@ def main():
     args = vars(parser.parse_args())
     if _check_argv(args):
         in_srts = {
-            in_srt.split(":")[0] : in_srt.split(":")[1] if len(in_srt.split(":"))>1 else None
+            in_srt.split(FILE_ENCODING_SEPARATOR)[0] : in_srt.split(FILE_ENCODING_SEPARATOR)[1] if len(in_srt.split(FILE_ENCODING_SEPARATOR))>1 else None
             for in_srt in args.get('inPath','')
         }
         srtmerge(in_srts,
