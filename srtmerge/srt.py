@@ -32,6 +32,19 @@ SubRecord = namedtuple('SubRecord', ['start', 'finish', 'text'])
 DEFAULT_ENCODING = 'utf-8'
 #needed to know args format
 ACCEPT_SRT_ENCODING = True
+#needed to know if identify langs feature is present
+ACCEPT_IDENTIFY_LANGS = True
+#color stuff
+colors = [
+    '#ff0000',
+    '#00ff00',
+    '#0000ff',
+]
+color_wrapper = {
+    0 : u'{}',
+}
+for idx,color in enumerate(colors):
+    color_wrapper[idx+1] = u'<font color="%s">{}</font>' % color
 
 class Subtitles(Sequence, Iterable):
 
@@ -164,7 +177,7 @@ def detect_encoding(file_path):
 
 
 def srtmerge(in_srt_files, out_srt,
-             offset=0, use_chardet=False, encoding=DEFAULT_ENCODING):
+             offset=0, use_chardet=False, encoding=DEFAULT_ENCODING,identify_langs=False,):
     subs = Subtitles()
     #RETROCOMPATIBILITY: allow old style args
     if type(in_srt_files) == type([]):
@@ -174,12 +187,16 @@ def srtmerge(in_srt_files, out_srt,
         }
     for file_path,_encoding in in_srt_files.iteritems():
         in_encoding = _encoding or (detect_encoding(file_path) if use_chardet else encoding)
-        subs = subs + subreader(file_path, encoding=in_encoding)
+        wrapper = u'{}'
+        if identify_langs:
+            wrapper = color_wrapper[idx % len(color_wrapper)]
+        subs = subs + subreader(file_path, encoding=in_encoding,wrapper=wrapper)
+    #save always in UTF-8
+    subwriter(out_srt, subs, offset, DEFAULT_ENCODING)
 
-    subwriter(out_srt, subs, offset, encoding)
 
 
-def subreader(file_path, encoding=DEFAULT_ENCODING):
+def subreader(file_path, encoding=DEFAULT_ENCODING,wrapper=u'{}'):
     """
     Reads srt-file and returns Subtitles instance.
     Args:
@@ -197,10 +214,12 @@ def subreader(file_path, encoding=DEFAULT_ENCODING):
 
             if re.match(pattern_index, line):
                 if start and finish:  # we've found next index
+                    _text = unicode('{0}\n').format('\n'.join(text))
                     subtitles.append(
-                        SubRecord(start, finish,
-                                  text=unicode('{0}\n').format('\n'.join(text))
-                                  )
+                        SubRecord(
+                            start, finish,
+                            text= wrapper.format(_text)
+                        )
                     )
                     start = finish = None
                     text = []
@@ -232,7 +251,7 @@ def subwriter(filepath, subtitles, offset=0, encoding=DEFAULT_ENCODING):
             text = line.format(index=unicode(index),
                                time=parse_ms(rec.start + offset,
                                              rec.finish + offset),
-                               text=rec.text)
+                               text=rec.text+u'\n')
             fd.write(text)
 
 if __name__ == '__main__':
