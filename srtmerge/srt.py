@@ -185,7 +185,7 @@ def srtmerge(in_srt_files, out_srt,
             srt : detect_encoding(srt) if use_chardet else encoding
             for srt in in_srt_files
         }
-    for file_path,_encoding in in_srt_files.iteritems():
+    for idx,(file_path,_encoding) in enumeate(in_srt_files.iteritems()):
         in_encoding = _encoding or (detect_encoding(file_path) if use_chardet else encoding)
         wrapper = u'{}'
         if identify_langs:
